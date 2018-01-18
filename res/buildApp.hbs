@@ -1,0 +1,11 @@
+sudo apt-get install make -y
+curl -L https://git.io/n-install | bash -s -- -q -y {{nodeVersion}}
+sudo ln -s /home/ubuntu/n/bin/node /usr/bin/node
+sudo ln -s /home/ubuntu/n/bin/npm /usr/bin/npm
+sudo mkdir /app
+sudo chown ubuntu:ubuntu /app
+git clone {{repoUrl}} /app
+cd app && git checkout {{commit}}
+cd /app && npm install
+cd /app && npm run build
+cd /app && npm run test

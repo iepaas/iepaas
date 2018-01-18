@@ -1,0 +1,43 @@
+{
+	"name": "@iepaas/iepaas",
+	"version": "0.0.1",
+	"description": "The iepaas parent server",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"reformat": "prettier --write \"**/*.ts\"",
+		"migrate": "node node_modules/@iepaas/db-adapter/src/migrations/migrate.js",
+		"build": "tsc",
+		"set-machine-provider": "node -r dotenv/config build/scripts/setMachineProvider.js"
+	},
+	"author": "Pablo Rodríguez <pabloviolin8@gmail.com>",
+	"license": "Apache-2.0",
+	"dependencies": {
+		"@iepaas/db-adapter": "0.0.1-dev.3",
+		"@iepaas/machine-provider-abstract": "0.0.1-dev.7",
+		"@iepaas/machine-provider-ec2": "0.0.1-dev.3",
+		"@iepaas/model": "0.0.1-dev.3",
+		"body-parser": "^1.18.2",
+		"common-tags": "^1.7.2",
+		"express": "^4.16.2",
+		"express-validator": "^4.3.0",
+		"handlebars": "^4.0.11",
+		"knex": "^0.14.2",
+		"nodegit": "^0.20.3",
+		"pg": "^7.4.1"
+	},
+	"devDependencies": {
+		"@types/body-parser": "^1.16.8",
+		"@types/common-tags": "^1.4.0",
+		"@types/express": "^4.11.0",
+		"@types/handlebars": "^4.0.36",
+		"@types/knex": "^0.14.0",
+		"@types/node": "^8.5.7",
+		"@types/nodegit": "^0.18.5",
+		"@types/pg": "^7.4.1",
+		"dotenv": "^4.0.0",
+		"prettier": "^1.10.2",
+		"typescript": "^2.6.2"
+	},
+	"private": true
+}

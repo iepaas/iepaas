@@ -1,0 +1,15 @@
+{
+	"files": [
+		"src/api/index.ts",
+		"src/worker/index.ts",
+		"src/scripts/setMachineProvider.ts"
+	],
+	"compilerOptions": {
+		"strict": true,
+		"noUnusedLocals": true,
+		"target": "es5",
+		"lib": ["ES2015"],
+		"inlineSourceMap": true,
+		"outDir": "build"
+	}
+}
