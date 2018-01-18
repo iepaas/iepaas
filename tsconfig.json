@@ -2,7 +2,9 @@
 	"files": [
 		"src/api/index.ts",
 		"src/worker/index.ts",
-		"src/scripts/setMachineProvider.ts"
+		"src/scripts/setMachineProvider.ts",
+		"src/scripts/setConfig.ts",
+		"src/scripts/setRepoUrl.ts"
 	],
 	"compilerOptions": {
 		"strict": true,

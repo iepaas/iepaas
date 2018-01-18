@@ -18,7 +18,7 @@ export async function launchChildren(
 
 	const createMachine = async () => {
 		// Randomize the ports so the user doesn't hardcode them
-		const port = randomNumber(3000, 4000)
+		const port = randomNumber(3001, 4000)
 		const envString = [
 			...env,
 			{
@@ -28,28 +28,33 @@ export async function launchChildren(
 		]
 			.map(it => `${it.key}=${it.value}`)
 			.join(" ")
-		const machine = await Provider.createMachine(MachineType.CHILD, [
-			`cd /app && ${envString} nohup ${command} < /dev/null > iepaas_app.log 2>&1 &`
-		])
+
+		const machine = await Provider.createMachine(
+			MachineType.CHILD,
+			[
+				`cd /app && ${envString} nohup ${command} < /dev/null > iepaas_app.log 2>&1 &`
+			],
+			{ id: build.snapshot }
+		)
 
 		return { machine, port }
 	}
 
-	await Promise.all([
+	await Promise.all(
 		Array(quantity)
 			.fill(null)
 			.map(() =>
-				createMachine().then(result =>
+				createMachine().then(({ machine, port }) =>
 					Children.insert({
 						command,
-						machineAddress: result.machine.address,
-						machinePort: result.port + "",
+						machineAddress: machine.address,
+						machinePort: port + "",
 						isJob: false,
 						build
 					})
 				)
 			)
-	])
+	)
 
 	await Children.commit()
 	await updateNginxConfig()

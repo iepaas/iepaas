@@ -4,12 +4,13 @@ import { exec } from "../support/exec"
 
 export async function main() {
 	const provider = process.argv[2]
+	const version = process.argv[3] || ""
 
 	if (!provider) {
 		throw new Error("You need to pass the provider as an argument")
 	}
 
-	const command = `npm install ${provider}`
+	const command = `npm install ${provider}${version ? `@${version}` : ""}`
 
 	const { stdout, exitCode } = await exec(command)
 
