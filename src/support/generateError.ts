@@ -15,14 +15,15 @@ export function generateError(errorCode: string, info?: any) {
 			additionalProperties.message =
 				"The API key you provided is not valid or has been revoked"
 			break
-		case "IEPAAS_ALREADY_INITIALIZED":
-			statusCode = 403
+		case "CHILD_AUTHENTICATION_FAILED":
+			const {ip} = info
+			statusCode = 401
 			additionalProperties.message =
-				"The /init endpoint has already been called once, and cannot be called again."
-			break
-		case "REPO_INVALID":
-			additionalProperties.message = oneLine`The repo you provided is
-			doesn't exist, is currently unavailable, or is not public`
+				oneLine`The X-Iepaas-Authenticate-As-Child header is present,
+				and iepaas has tried to authenticate your request using child
+				authentication. However, the address ${ip} doesn't belong to
+				an active (not terminated) child.`
+			additionalProperties.originAddress = ip
 			break
 		case "INVALID_JSON":
 			additionalProperties.message =

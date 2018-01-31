@@ -11,9 +11,8 @@ export async function updateNginxConfig() {
 	const [builds, children] = await Promise.all([
 		getBuildsAdapter().then(A => A.findAll(1)),
 		getChildrenAdapter()
-			.then(A => A.findAll())
-			// TODO don't filter here, make a findAllRunning method
-			.then(it => it.filter(it => !it.isJob && !it.isTerminated))
+			.then(A => A.findAllActive())
+			.then(it => it.filter(it => !it.isJob))
 	])
 
 	const rendered = await renderNginxConfig({
