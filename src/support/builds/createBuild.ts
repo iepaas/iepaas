@@ -5,13 +5,15 @@ import { Config, getBuildsAdapter } from "@iepaas/db-adapter"
 import { promisify } from "util"
 import { getMachineProvider } from "../getMachineProvider"
 import { REPO_URL } from "../../configKeys"
+import { getInternalAddress } from "../getInternalAddress"
 
 const readFile = promisify(fs.readFile)
 
 export async function createBuild(commit: string) {
-	const [Provider, repoUrl] = await Promise.all([
+	const [Provider, repoUrl, internalAddress] = await Promise.all([
 		getMachineProvider(),
-		Config.get(REPO_URL)
+		Config.get(REPO_URL),
+		getInternalAddress()
 	])
 
 	if (!repoUrl) {
@@ -26,7 +28,9 @@ export async function createBuild(commit: string) {
 		// TODO allow to change
 		nodeVersion: "8.9.4",
 		repoUrl: await Config.get(REPO_URL),
-		commit
+		commit,
+		logAddress: internalAddress,
+		logPort: 5000
 	}).split("\n")
 
 	const machine = await Provider.createMachine(MachineType.BUILD, commands)

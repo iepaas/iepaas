@@ -10,7 +10,7 @@ root hard nofile 65536
 EOF
 ) | sudo tee -a /etc/security/limits.conf > /dev/null
 
-curl -L https://toolbelt.treasuredata.com/sh/install-ubuntu-xenial-td-agent2.sh | sh
+curl -L https://toolbelt.treasuredata.com/sh/install-ubuntu-xenial-td-agent3.sh | sh
 
 (
 cat << EOF

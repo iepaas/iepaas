@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-(
-cat << EOF
+sudo tee /etc/systemd/system/iepaas.api.service > /dev/null << EOF
 [Unit]
 Description=Starts iepaas
 
@@ -10,10 +9,8 @@ ExecStart=/bin/bash -c "sudo PORT=4898 DATABASE_URL=${DATABASE_URL} node /iepaas
 [Install]
 WantedBy=multi-user.target
 EOF
-) | sudo tee /etc/systemd/system/iepaas.api.service > /dev/null
 
-(
-cat << EOF
+sudo tee /etc/systemd/system/iepaas.worker.service > /dev/null << EOF
 [Unit]
 Description=Starts iepaas
 
@@ -23,7 +20,6 @@ ExecStart=/bin/bash -c "sudo DATABASE_URL=${DATABASE_URL} node /iepaas/build/wor
 [Install]
 WantedBy=multi-user.target
 EOF
-) | sudo tee /etc/systemd/system/iepaas.worker.service < /dev/null
 
 sudo systemctl daemon-reload
 sudo systemctl enable iepaas.api

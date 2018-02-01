@@ -4,18 +4,18 @@ import { MachineType } from "@iepaas/machine-provider-abstract"
 import { getMachineProvider } from "../getMachineProvider"
 import { randomNumber } from "../randomNumber"
 import { updateNginxConfig } from "../nginx/updateNginxConfig"
-import { getHost } from "../getHost"
+import { getInternalAddress } from "../getInternalAddress"
 
 export async function launchChildren(
 	build: Build,
 	command: string,
 	quantity: number
 ) {
-	const [Provider, Children, env, host] = await Promise.all([
+	const [Provider, Children, env, internalAddress] = await Promise.all([
 		getMachineProvider(),
 		getChildrenAdapter(true),
 		Environment.getAll(),
-		getHost()
+		getInternalAddress()
 	])
 
 	const createMachine = async () => {
@@ -33,7 +33,7 @@ export async function launchChildren(
 			},
 			{
 				key: "IEPAAS_API_HOST",
-				value: host
+				value: internalAddress
 			}
 		]
 			.map(it => `${it.key}=${it.value}`)
@@ -42,7 +42,10 @@ export async function launchChildren(
 		const machine = await Provider.createMachine(
 			MachineType.CHILD,
 			[
-				`cd /app && ${envString} nohup ${command} < /dev/null > iepaas_app.log 2>&1 &`
+				`cd /app`,
+				`touch iepaas_app.log`,
+				`nohup tail -f iepaas_app.log | nc ${internalAddress} 5001 &`,
+				`${envString} nohup ${command} < /dev/null > iepaas_app.log 2>&1 &`
 			],
 			{ id: build.snapshot }
 		)

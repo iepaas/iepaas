@@ -11,7 +11,11 @@ sudo ln -s ${npm_path} /usr/bin/npm
 sudo mkdir /app
 sudo chown ubuntu:ubuntu /app
 git clone {{repoUrl}} /app
-cd /app && git checkout {{commit}}
-cd /app && npm install
-cd /app && npm run build
-cd /app && npm run test
+touch /var/log/iepaas_build.log
+nohup tail -f /var/log/iepaas_build.log | nc {{logAddress}} {{logPort}} &
+cd /app
+git checkout {{commit}}
+npm install >> /var/log/iepaas_build.log 2>&1
+npm run build >> /var/log/iepaas_build.log 2>&1
+npm run test >> /var/log/iepaas_build.log 2>&1
+echo "Build finished!" >> /var/log/iepaas_build.log
