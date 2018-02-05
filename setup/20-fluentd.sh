@@ -24,7 +24,7 @@ cat << EOF
 
 <source>
 	@type tail
-	path /iepaas/logs/api.log
+	path /iepaas/logs/worker.log
 	pos_file /var/log/td-agent/iepaas.worker.pos
 	tag iepaas.worker
 	format none

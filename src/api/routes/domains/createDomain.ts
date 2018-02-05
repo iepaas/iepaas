@@ -1,13 +1,12 @@
-import * as fs from "fs"
-import { promisify } from "util"
+import { getDomainsAdapter } from "@iepaas/db-adapter"
 import { validationResult } from "express-validator/check"
+import { matchedData } from "express-validator/filter"
 import { createController } from "../../../support/createController"
 import { generateError } from "../../../support/generateError"
-import { matchedData } from "express-validator/filter"
 
-const appendFile = promisify(fs.appendFile)
+export const createDomain = createController(async req => {
+	const Domains = await getDomainsAdapter()
 
-export const createSSHKey = createController(async req => {
 	const errors = validationResult(req)
 	if (!errors.isEmpty()) {
 		return generateError("VALIDATION_ERROR", errors)
@@ -15,7 +14,7 @@ export const createSSHKey = createController(async req => {
 
 	const data = matchedData(req) as any
 
-	await appendFile("/home/ubuntu/.ssh/authorized_keys", data.key.trim())
+	const domain = await Domains.insert(data)
 
-	return [200]
+	return [200, domain.serialize()]
 })

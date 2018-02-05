@@ -5,7 +5,10 @@ import { methodNotAllowed } from "../../../support/methodNotAllowed"
 
 const router = Router()
 
-router.route("/").post(createApiKeyValidations, createApiKey).all(methodNotAllowed)
+router
+	.route("/")
+	.post(createApiKeyValidations, createApiKey)
+	.all(methodNotAllowed)
 
 // TODO allow managing api keys
 

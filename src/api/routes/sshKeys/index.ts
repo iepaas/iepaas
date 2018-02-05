@@ -5,7 +5,8 @@ import { createSSHKey } from "./createSSHKey"
 
 const router = Router()
 
-router.route("/")
+router
+	.route("/")
 	.post(createSSHKeyValidations, createSSHKey)
 	.all(methodNotAllowed)
 

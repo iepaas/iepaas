@@ -1,10 +1,9 @@
-import { setupNginxControl } from "../support/nginx"
+import { setupNginxControl } from "../support/nginx/setupNginxControl"
+import { setupDomainValidations } from "./domains"
 
 async function main() {
 	await Promise.all([setupNginxControl()])
-
-	// Keep process alive - eventually should be removed
-	setInterval(() => {}, 60000)
+	await Promise.all([setupDomainValidations()])
 }
 
 main().catch(console.error)

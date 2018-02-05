@@ -4,7 +4,9 @@ import { createMiddleware } from "../../support/createMiddleware"
 import { ApiRequest } from "../../interfaces/ApiRequest"
 
 export const authenticate = createMiddleware(async req => {
-	if ((req.get("X-Iepaas-Authenticate-As-Child") || "").toLowerCase() !== "true") {
+	if (
+		(req.get("X-Iepaas-Authenticate-As-Child") || "").toLowerCase() !== "true"
+	) {
 		return authenticateAsUser(req)
 	} else {
 		return authenticateAsChild(req)
@@ -52,6 +54,6 @@ export async function authenticateAsChild(req: ApiRequest) {
 	if (child) {
 		req.authentication = child
 	} else {
-		return generateError("CHILD_AUTHENTICATION_FAILED", {ip})
+		return generateError("CHILD_AUTHENTICATION_FAILED", { ip })
 	}
 }

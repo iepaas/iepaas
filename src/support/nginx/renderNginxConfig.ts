@@ -1,7 +1,7 @@
 import * as Handlebars from "handlebars"
 import * as fs from "fs"
 import { promisify } from "util"
-import { Child } from "@iepaas/model"
+import { Child, Domain } from "@iepaas/model"
 
 const readFile = promisify(fs.readFile)
 
@@ -9,6 +9,7 @@ export interface NginxConfigData {
 	appBuilt: boolean
 	appRunning: boolean
 	children: Array<Child>
+	domains: Array<Domain>
 }
 
 let _template: HandlebarsTemplateDelegate<NginxConfigData> | null = null

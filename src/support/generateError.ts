@@ -16,14 +16,18 @@ export function generateError(errorCode: string, info?: any) {
 				"The API key you provided is not valid or has been revoked"
 			break
 		case "CHILD_AUTHENTICATION_FAILED":
-			const {ip} = info
+			const { ip } = info
 			statusCode = 401
-			additionalProperties.message =
-				oneLine`The X-Iepaas-Authenticate-As-Child header is present,
+			additionalProperties.message = oneLine`The X-Iepaas-Authenticate-As-Child header is present,
 				and iepaas has tried to authenticate your request using child
 				authentication. However, the address ${ip} doesn't belong to
 				an active (not terminated) child.`
 			additionalProperties.originAddress = ip
+			break
+		case "APP_NOT_BUILT":
+			statusCode = 422
+			additionalProperties.message = oneLine`The requested operation is
+			only available when the first build of the app has been created.`
 			break
 		case "INVALID_JSON":
 			additionalProperties.message =

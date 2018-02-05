@@ -23,7 +23,14 @@ export async function main() {
 		const build = await createBuild(commit)
 		console.log(`Build #${build.id} succeeded. Launching the first child...`)
 
-		await launchChildren(build, "npm start", 1)
+		await launchChildren({
+			build,
+			// TODO abstract this to processes
+			command: "npm start",
+			quantity: 1,
+			isJob: false
+		})
+
 		console.log("Launch succeeded; the first child is live.")
 	} catch (e) {
 		await Config.delete(repoUrl)

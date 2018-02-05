@@ -1,4 +1,4 @@
-import { Build } from "@iepaas/model"
+import { Build, Process } from "@iepaas/model"
 import { Environment, getChildrenAdapter } from "@iepaas/db-adapter"
 import { MachineType } from "@iepaas/machine-provider-abstract"
 import { getMachineProvider } from "../getMachineProvider"
@@ -6,11 +6,23 @@ import { randomNumber } from "../randomNumber"
 import { updateNginxConfig } from "../nginx/updateNginxConfig"
 import { getInternalAddress } from "../getInternalAddress"
 
-export async function launchChildren(
-	build: Build,
-	command: string,
+export interface LaunchChildrenOptions {
+	build: Build
+	process?: Process
+	command?: string
 	quantity: number
-) {
+	isJob: boolean
+}
+
+export async function launchChildren(options: LaunchChildrenOptions) {
+	const { build, process, command: givenCommand, quantity, isJob } = options
+
+	const command = process ? process.command : givenCommand
+
+	if (!command) {
+		throw new Error("You need to define either the command or the build!")
+	}
+
 	const [Provider, Children, env, internalAddress] = await Promise.all([
 		getMachineProvider(),
 		getChildrenAdapter(true),
@@ -20,6 +32,8 @@ export async function launchChildren(
 
 	const createMachine = async () => {
 		// Randomize the ports so the authentication doesn't hardcode them
+		// TODO jobs shouldn't have ports given to them
+		// TODO make a health check port too
 		const port = randomNumber(3001, 4000)
 		const envString = [
 			...env,
@@ -62,7 +76,7 @@ export async function launchChildren(
 						command,
 						machineAddress: machine.address,
 						machinePort: port + "",
-						isJob: false,
+						isJob,
 						build
 					})
 				)
@@ -70,5 +84,8 @@ export async function launchChildren(
 	)
 
 	await Children.commit()
-	await updateNginxConfig()
+
+	if (!isJob) {
+		await updateNginxConfig()
+	}
 }
