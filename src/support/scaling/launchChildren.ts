@@ -1,10 +1,13 @@
+import { oneLine } from "common-tags"
 import { Build, Process } from "@iepaas/model"
 import { Environment, getChildrenAdapter } from "@iepaas/db-adapter"
 import { MachineType } from "@iepaas/machine-provider-abstract"
 import { getMachineProvider } from "../getMachineProvider"
-import { randomNumber } from "../randomNumber"
+import { randomNumber } from "../misc/randomNumber"
+import { randomString } from "../misc/randomString"
 import { updateNginxConfig } from "../nginx/updateNginxConfig"
-import { getInternalAddress } from "../getInternalAddress"
+import { getInternalAddress } from "../network/getInternalAddress"
+import { getPublicAddress } from "../network/getPublicAddress"
 
 export interface LaunchChildrenOptions {
 	build: Build
@@ -23,12 +26,21 @@ export async function launchChildren(options: LaunchChildrenOptions) {
 		throw new Error("You need to define either the command or the build!")
 	}
 
-	const [Provider, Children, env, internalAddress] = await Promise.all([
+	const [
+		Provider,
+		Children,
+		env,
+		publicAddress,
+		internalAddress
+	] = await Promise.all([
 		getMachineProvider(),
 		getChildrenAdapter(true),
 		Environment.getAll(),
+		getPublicAddress(),
 		getInternalAddress()
 	])
+
+	const logPort = isJob ? 5002 : 5001
 
 	const createMachine = async () => {
 		// Randomize the ports so the authentication doesn't hardcode them
@@ -45,21 +57,35 @@ export async function launchChildren(options: LaunchChildrenOptions) {
 				key: "IEPAAS",
 				value: "true"
 			},
+			// TODO if we send the internal ip here, the iepaas api will
+			// receive the internal ip of the machine instead of the public
+			// and will not be able to authenticate it.
 			{
 				key: "IEPAAS_API_HOST",
-				value: internalAddress
+				value: publicAddress
 			}
 		]
 			.map(it => `${it.key}=${it.value}`)
 			.join(" ")
 
+		const logFile = `/tmp/iepaas${randomString(6)}.log`
+
+		const selfDestructCommand = isJob
+			? oneLine` && curl https://${publicAddress}:4898/api/v1/jobs
+				-X DELETE
+				--header "X-Iepaas-Authenticate-As-Child: true"`
+			: ""
+
+		const mainCommand = oneLine`${envString} ${command} < /dev/null
+		> ${logFile} 2>&1${selfDestructCommand}'`.replace(/'/g, "\\'")
+
 		const machine = await Provider.createMachine(
 			MachineType.CHILD,
 			[
 				`cd /app`,
-				`touch iepaas_app.log`,
-				`nohup tail -f iepaas_app.log | nc ${internalAddress} 5001 &`,
-				`${envString} nohup ${command} < /dev/null > iepaas_app.log 2>&1 &`
+				`touch ${logFile}`,
+				`nohup tail -f ${logFile} | nc ${internalAddress} ${logPort} &`,
+				`nohup sh -c '${mainCommand}' &`
 			],
 			{ id: build.snapshot }
 		)
@@ -74,6 +100,7 @@ export async function launchChildren(options: LaunchChildrenOptions) {
 				createMachine().then(({ machine, port }) =>
 					Children.insert({
 						command,
+						machineId: machine.id,
 						machineAddress: machine.address,
 						machinePort: port + "",
 						isJob,

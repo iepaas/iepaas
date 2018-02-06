@@ -6,8 +6,6 @@ import { generateError } from "../../../support/generateError"
 import { launchChildren } from "../../../support/scaling/launchChildren"
 import { getLatestBuild } from "../../../support/builds/getLatestBuild"
 
-// TODO test this
-
 export const createJob = createController(async req => {
 	const errors = validationResult(req)
 	if (!errors.isEmpty()) {
@@ -26,7 +24,7 @@ export const createJob = createController(async req => {
 
 	if (data.command) {
 		command = data.command
-	} else {
+	} else if (data.processId) {
 		const Processes = await getProcessesAdapter()
 		const process = await Processes.findById(data.processId)
 
@@ -41,6 +39,14 @@ export const createJob = createController(async req => {
 				}
 			]
 		}
+	} else {
+		return [
+			400,
+			{
+				error: "UNSPECIFIED_OPERATION",
+				message: "You need to either specify a 'processId' or a 'command'"
+			}
+		]
 	}
 
 	// TODO make jobs auto-terminate on exit

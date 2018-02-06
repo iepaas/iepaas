@@ -1,4 +1,4 @@
-import { exec } from "./exec"
+import { exec } from "../exec"
 
 export async function getAddressOfHost(host: string): Promise<string | null> {
 	const { exitCode, stdout } = await exec(`dig +short ${host}`)

@@ -48,7 +48,7 @@ async function authenticateAsUser(req: ApiRequest) {
 
 export async function authenticateAsChild(req: ApiRequest) {
 	const Children = await getChildrenAdapter()
-	const ip = req.connection.remoteAddress || ""
+	const ip = req.header("X-Forwarded-For") || ""
 	const child = await Children.findActiveByAddress(ip)
 
 	if (child) {

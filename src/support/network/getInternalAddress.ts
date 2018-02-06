@@ -1,4 +1,4 @@
-import { exec } from "./exec"
+import { exec } from "../exec"
 
 export async function getInternalAddress(): Promise<string> {
 	const { exitCode, stdout, stderr } = await exec(

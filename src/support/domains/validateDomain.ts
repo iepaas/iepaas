@@ -1,8 +1,8 @@
 import { oneLine } from "common-tags"
 import { Domain } from "@iepaas/model"
 import { getDomainsAdapter } from "@iepaas/db-adapter"
-import { getPublicAddress } from "../getPublicAddress"
-import { getAddressOfHost } from "../getAddressOfHost"
+import { getPublicIp } from "../network/getPublicIp"
+import { getAddressOfHost } from "../network/getAddressOfHost"
 import { updateNginxConfig } from "../nginx/updateNginxConfig"
 import { requestDomainCertificates } from "./requestDomainCertificates"
 
@@ -17,7 +17,7 @@ export async function validateDomain(domain: Domain) {
 	const Domains = await getDomainsAdapter()
 
 	const [ourAddress, domainAddress] = await Promise.all([
-		getPublicAddress(),
+		getPublicIp(),
 		getAddressOfHost(domain.name)
 	])
 

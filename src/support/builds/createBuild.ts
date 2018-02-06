@@ -5,7 +5,7 @@ import { Config, getBuildsAdapter } from "@iepaas/db-adapter"
 import { promisify } from "util"
 import { getMachineProvider } from "../getMachineProvider"
 import { REPO_URL } from "../../configKeys"
-import { getInternalAddress } from "../getInternalAddress"
+import { getInternalAddress } from "../network/getInternalAddress"
 
 const readFile = promisify(fs.readFile)
 
