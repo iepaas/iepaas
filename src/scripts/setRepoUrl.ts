@@ -1,8 +1,8 @@
 import * as Git from "nodegit"
-import { Config } from "@iepaas/db-adapter"
+import { Config, getProcessesAdapter } from "@iepaas/db-adapter"
 import { REPO_URL } from "../configKeys"
 import { createBuild } from "../support/builds/createBuild"
-import { launchChildren } from "../support/scaling/launchChildren"
+import { ensureCorrectProcessQuantities } from "../support/scaling/ensureCorrectProcessQuantities"
 
 export async function main() {
 	const repoUrl = process.argv[2]
@@ -23,13 +23,14 @@ export async function main() {
 		const build = await createBuild(commit)
 		console.log(`Build #${build.id} succeeded. Launching the first child...`)
 
-		await launchChildren({
-			build,
-			// TODO abstract this to processes
+		// TODO support buildpacks and detect it automatically
+		await getProcessesAdapter().then(A => A.insert({
+			name: "web",
 			command: "npm start",
-			quantity: 1,
-			isJob: false
-		})
+			targetQuantity: 1
+		}))
+
+		await ensureCorrectProcessQuantities()
 
 		console.log("Launch succeeded; the first child is live.")
 	} catch (e) {

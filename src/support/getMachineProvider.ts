@@ -16,5 +16,5 @@ export async function getMachineProvider() {
 	const Provider = pkg.MachineProvider
 
 	// TODO allow to change app name
-	return new Provider("testapp", Config) as AbstractMachineProvider
+	return new Provider("iepaas app", Config) as AbstractMachineProvider
 }

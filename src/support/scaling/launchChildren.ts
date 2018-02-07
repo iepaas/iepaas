@@ -26,6 +26,8 @@ export async function launchChildren(options: LaunchChildrenOptions) {
 		throw new Error("You need to define either the command or the build!")
 	}
 
+	console.log(`Launching children: ${JSON.stringify({command, isJob, quantity})}`)
+
 	const [
 		Provider,
 		Children,
@@ -68,24 +70,29 @@ export async function launchChildren(options: LaunchChildrenOptions) {
 			.map(it => `${it.key}=${it.value}`)
 			.join(" ")
 
-		const logFile = `/tmp/iepaas${randomString(6)}.log`
-
-		const selfDestructCommand = isJob
-			? oneLine` && curl https://${publicAddress}:4898/api/v1/jobs
-				-X DELETE
-				--header "X-Iepaas-Authenticate-As-Child: true"`
-			: ""
-
-		const mainCommand = oneLine`${envString} ${command} < /dev/null
-		> ${logFile} 2>&1${selfDestructCommand}'`.replace(/'/g, "\\'")
+		const scriptFile = `/tmp/iepaas_${randomString(6)}.sh`
+		const logFile = `/tmp/iepaas_${randomString(6)}.log`
 
 		const machine = await Provider.createMachine(
 			MachineType.CHILD,
 			[
 				`cd /app`,
 				`touch ${logFile}`,
+				`cat > ${scriptFile} << EOF`,
+				command,
+				isJob
+					// We sleep for a bit because the children will only be
+					// authenticated if they have been created successfully,
+					// and the creation finished after cloud-init finishes
+					? oneLine`sleep 5 &&
+						curl https://${publicAddress}:4898/api/v1/jobs
+						-X DELETE
+						--header "X-Iepaas-Authenticate-As-Child: true"
+						> /dev/null 2>&1`
+					: "",
+				`EOF`,
 				`nohup tail -f ${logFile} | nc ${internalAddress} ${logPort} &`,
-				`nohup sh -c '${mainCommand}' &`
+				`nohup sh -c '${envString} bash ${scriptFile} > ${logFile} 2>&1' &`
 			],
 			{ id: build.snapshot }
 		)
@@ -115,4 +122,6 @@ export async function launchChildren(options: LaunchChildrenOptions) {
 	if (!isJob) {
 		await updateNginxConfig()
 	}
+
+	console.log("All children successfully launched!")
 }

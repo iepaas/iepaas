@@ -49,13 +49,15 @@ export const createJob = createController(async req => {
 		]
 	}
 
-	// TODO make jobs auto-terminate on exit
-	await launchChildren({
+	launchChildren({
 		build,
 		quantity: 1,
 		isJob: true,
 		command
+	}).catch(err => {
+		console.error("Failed to create a job!")
+		console.error(err)
 	})
 
-	return [200]
+	return [202]
 })

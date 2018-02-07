@@ -1,4 +1,5 @@
-import { ApiKey } from "@iepaas/model"
+import { ApiKey, Child } from "@iepaas/model"
+import { getChildrenAdapter } from "@iepaas/db-adapter"
 import { createController } from "../../../support/createController"
 import { getMachineProvider } from "../../../support/getMachineProvider"
 import { childToMachine } from "../../../support/misc/jobToMachine"
@@ -24,12 +25,19 @@ export const selfDestructJob = createController(async req => {
 		]
 	}
 
+	const child: Child = req.authentication
+
 	const Provider = await getMachineProvider()
 
-	Provider.destroyMachine(childToMachine(req.authentication)).catch(err => {
-		console.error("Failed to terminate a job!")
-		console.error(err)
-	})
+	Provider.destroyMachine(childToMachine(child))
+		.then(() => getChildrenAdapter())
+		.then(A => A.update(child, {isTerminated: true}))
+		.catch(err => {
+			console.error("Failed to terminate a job!")
+			console.error(err)
+		})
+
+	console.log(`The job from machine ${child.machineId} finished`)
 
 	return [202]
 })

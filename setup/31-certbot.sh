@@ -5,4 +5,7 @@ sudo apt-get install -y certbot
 
 sudo mkdir /var/www/html/.well-known
 
-# TODO add renew to crontab
+sudo crontab << EOF
+# Renew the certificates daiy, if needed
+43 6 * * * certbot renew --post-hook "systemctl restart nginx"
+EOF
