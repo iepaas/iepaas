@@ -1,9 +1,10 @@
 import { getDomainsAdapter } from "@iepaas/db-adapter"
 import { DOMAIN_INTERVAL } from "../config"
 import { validateDomain } from "../support/domains/validateDomain"
+import { setNonOverlappingInterval } from "../support/setNonOverlappingInterval"
 
 export function setupDomainValidations() {
-	setInterval(async () => {
+	setNonOverlappingInterval(async () => {
 		try {
 			const Domains = await getDomainsAdapter()
 			await Domains.findAllPendingValidation().then(domains =>

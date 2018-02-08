@@ -17,7 +17,6 @@
 	"dependencies": {
 		"@iepaas/db-adapter": "0.0.1-dev.10",
 		"@iepaas/machine-provider-abstract": "0.0.1-dev.7",
-		"@iepaas/machine-provider-ec2": "0.0.1-dev.6",
 		"@iepaas/model": "0.0.1-dev.11",
 		"body-parser": "^1.18.2",
 		"common-tags": "^1.7.2",

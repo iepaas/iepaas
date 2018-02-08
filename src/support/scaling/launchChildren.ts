@@ -106,12 +106,18 @@ export async function launchChildren(options: LaunchChildrenOptions) {
 			.map(() =>
 				createMachine().then(({ machine, port }) =>
 					Children.insert({
-						command,
 						machineId: machine.id,
 						machineAddress: machine.address,
 						machinePort: port + "",
 						isJob,
-						build
+						build,
+						...(() => {
+							if (process) {
+								return {process}
+							} else {
+								return {command: givenCommand}
+							}
+						})()
 					})
 				)
 			)
