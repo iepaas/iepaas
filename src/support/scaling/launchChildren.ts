@@ -67,7 +67,7 @@ export async function launchChildren(options: LaunchChildrenOptions) {
 				value: publicAddress
 			}
 		]
-			.map(it => `${it.key}=${it.value}`)
+			.map(it => `${it.key}='${it.value}'`)
 			.join(" ")
 
 		const scriptFile = `/tmp/iepaas_${randomString(6)}.sh`
