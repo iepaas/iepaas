@@ -49,7 +49,7 @@ export async function launchChildren(options: LaunchChildrenOptions) {
 		// TODO jobs shouldn't have ports given to them
 		// TODO make a health check port too
 		const port = randomNumber(3001, 4000)
-		const envString = [
+		const envCommands = [
 			...env,
 			{
 				key: "PORT",
@@ -67,8 +67,7 @@ export async function launchChildren(options: LaunchChildrenOptions) {
 				value: publicAddress
 			}
 		]
-			.map(it => `${it.key}='${it.value}'`)
-			.join(" ")
+			.map(it => `export ${it.key}='${it.value}'`)
 
 		const scriptFile = `/tmp/iepaas_${randomString(6)}.sh`
 		const logFile = `/tmp/iepaas_${randomString(6)}.log`
@@ -79,6 +78,7 @@ export async function launchChildren(options: LaunchChildrenOptions) {
 				`cd /app`,
 				`touch ${logFile}`,
 				`cat > ${scriptFile} << EOF`,
+				...envCommands,
 				command,
 				isJob
 					// We sleep for a bit because the children will only be
@@ -94,7 +94,7 @@ export async function launchChildren(options: LaunchChildrenOptions) {
 					: "",
 				`EOF`,
 				`nohup tail -f ${logFile} | nc ${internalAddress} ${logPort} &`,
-				`nohup sh -c '${envString} bash ${scriptFile} > ${logFile} 2>&1' &`
+				`nohup sh -c '${envCommands} bash ${scriptFile} > ${logFile} 2>&1' &`
 			],
 			{ id: build.snapshot }
 		)
