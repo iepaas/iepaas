@@ -94,7 +94,7 @@ export async function launchChildren(options: LaunchChildrenOptions) {
 					: "",
 				`EOF`,
 				`nohup tail -f ${logFile} | nc ${internalAddress} ${logPort} &`,
-				`nohup sh -c '${envCommands} bash ${scriptFile} > ${logFile} 2>&1' &`
+				`nohup sh -c 'bash ${scriptFile} > ${logFile} 2>&1' &`
 			],
 			{ id: build.snapshot }
 		)
