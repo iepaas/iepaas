@@ -19,31 +19,35 @@ export async function ensureCorrectProcessQuantities() {
 		return
 	}
 
-	await Promise.all(processes.map(async process => {
-		const processChildren = children.filter(it => it.process && it.process.id === process.id)
+	await Promise.all(
+		processes.map(async process => {
+			const processChildren = children.filter(
+				it => it.process && it.process.id === process.id
+			)
 
-		const missingChildren = process.targetQuantity - processChildren.length
+			const missingChildren = process.targetQuantity - processChildren.length
 
-		if (missingChildren !== 0) {
-			console.log(oneLine`There is a ${-missingChildren} difference of
+			if (missingChildren !== 0) {
+				console.log(oneLine`There is a ${-missingChildren} difference of
 			children in the ${process.name} process (target =
 			${process.targetQuantity}, actual = ${processChildren.length})`)
-		}
+			}
 
-		if (missingChildren > 0) {
-			await launchChildren({
-				build,
-				process,
-				quantity: missingChildren,
-				isJob: false
-			})
-		} else if (missingChildren < 0) {
-			// In case we have an excess, destroy the oldest children
-			const childrenToDestroy = processChildren
-				.sort((a, b) => a.startedAt.getTime() - b.startedAt.getTime())
-				.slice(0, -missingChildren)
+			if (missingChildren > 0) {
+				await launchChildren({
+					build,
+					process,
+					quantity: missingChildren,
+					isJob: false
+				})
+			} else if (missingChildren < 0) {
+				// In case we have an excess, destroy the oldest children
+				const childrenToDestroy = processChildren
+					.sort((a, b) => a.startedAt.getTime() - b.startedAt.getTime())
+					.slice(0, -missingChildren)
 
-			await destroyChildren(childrenToDestroy)
-		}
-	}))
+				await destroyChildren(childrenToDestroy)
+			}
+		})
+	)
 }

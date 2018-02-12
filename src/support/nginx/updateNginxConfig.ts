@@ -16,7 +16,8 @@ export async function updateNginxConfig() {
 		getBuildsAdapter().then(A => A.findAll(1)),
 		getChildrenAdapter()
 			.then(A => A.findAllActive())
-			.then(it => it.filter(it => !it.isJob)),
+			.then(it => it.filter(it => !it.isJob))
+			.then(it => it.filter(it => it.process && it.process.name === "web")),
 		getDomainsAdapter().then(A => A.findAll())
 	])
 

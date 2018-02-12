@@ -18,12 +18,16 @@ export async function destroyChildren(children: Array<Child>) {
 		}
 	})
 
-	await Promise.all(children.map(async child => {
-		console.log(`Destroying child #${child.id}...`)
-		await Children.update(child, {isTerminated: true})
-	}))
+	await Promise.all(
+		children.map(async child => {
+			console.log(`Destroying child #${child.id}...`)
+			await Children.update(child, { isTerminated: true })
+		})
+	)
 
 	await updateNginxConfig()
 
-	await Promise.all(children.map(child => Provider.destroyMachine(childToMachine(child))))
+	await Promise.all(
+		children.map(child => Provider.destroyMachine(childToMachine(child)))
+	)
 }

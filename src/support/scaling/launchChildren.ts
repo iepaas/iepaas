@@ -26,7 +26,9 @@ export async function launchChildren(options: LaunchChildrenOptions) {
 		throw new Error("You need to define either the command or the build!")
 	}
 
-	console.log(`Launching children: ${JSON.stringify({command, isJob, quantity})}`)
+	console.log(
+		`Launching children: ${JSON.stringify({ command, isJob, quantity })}`
+	)
 
 	const [
 		Provider,
@@ -66,8 +68,7 @@ export async function launchChildren(options: LaunchChildrenOptions) {
 				key: "IEPAAS_API_HOST",
 				value: publicAddress
 			}
-		]
-			.map(it => `export ${it.key}='${it.value}'`)
+		].map(it => `export ${it.key}='${it.value}'`)
 
 		const scriptFile = `/tmp/iepaas_${randomString(6)}.sh`
 		const logFile = `/tmp/iepaas_${randomString(6)}.log`
@@ -81,10 +82,10 @@ export async function launchChildren(options: LaunchChildrenOptions) {
 				...envCommands,
 				command,
 				isJob
-					// We sleep for a bit because the children will only be
-					// authenticated if they have been created successfully,
-					// and the creation finished after cloud-init finishes
-					? oneLine`sleep 5 &&
+					? // We sleep for a bit because the children will only be
+						// authenticated if they have been created successfully,
+						// and the creation finished after cloud-init finishes
+						oneLine`sleep 5 &&
 						curl https://${publicAddress}:4898/api/v1/jobs
 						-X DELETE
 						--header "X-Iepaas-Authenticate-As-Child: true
@@ -115,9 +116,9 @@ export async function launchChildren(options: LaunchChildrenOptions) {
 						build,
 						...(() => {
 							if (process) {
-								return {process}
+								return { process }
 							} else {
-								return {command: givenCommand}
+								return { command: givenCommand }
 							}
 						})()
 					})
@@ -127,7 +128,7 @@ export async function launchChildren(options: LaunchChildrenOptions) {
 
 	await Children.commit()
 
-	if (!isJob) {
+	if (!isJob && process && process.name === "web") {
 		await updateNginxConfig()
 	}
 

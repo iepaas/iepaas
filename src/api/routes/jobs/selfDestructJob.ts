@@ -31,7 +31,7 @@ export const selfDestructJob = createController(async req => {
 
 	Provider.destroyMachine(childToMachine(child))
 		.then(() => getChildrenAdapter())
-		.then(A => A.update(child, {isTerminated: true}))
+		.then(A => A.update(child, { isTerminated: true }))
 		.catch(err => {
 			console.error("Failed to terminate a job!")
 			console.error(err)

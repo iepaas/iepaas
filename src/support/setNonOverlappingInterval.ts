@@ -14,7 +14,10 @@
  * @param waitMilliseconds The number of milliseconds to wait before
  * the next execution
  */
-export function setNonOverlappingInterval(predicate: () => Promise<any>, waitMilliseconds: number) {
+export function setNonOverlappingInterval(
+	predicate: () => Promise<any>,
+	waitMilliseconds: number
+) {
 	async function tick() {
 		await predicate()
 		await new Promise(r => setTimeout(r, waitMilliseconds))

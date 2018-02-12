@@ -24,11 +24,13 @@ export async function main() {
 		console.log(`Build #${build.id} succeeded. Launching the first child...`)
 
 		// TODO support buildpacks and detect it automatically
-		await getProcessesAdapter().then(A => A.insert({
-			name: "web",
-			command: "npm start",
-			targetQuantity: 1
-		}))
+		await getProcessesAdapter().then(A =>
+			A.insert({
+				name: "web",
+				command: "npm start",
+				targetQuantity: 1
+			})
+		)
 
 		await ensureCorrectProcessQuantities()
 
