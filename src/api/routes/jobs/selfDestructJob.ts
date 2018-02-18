@@ -2,7 +2,7 @@ import { ApiKey, Child } from "@iepaas/model"
 import { getChildrenAdapter } from "@iepaas/db-adapter"
 import { createController } from "../../../support/createController"
 import { getMachineProvider } from "../../../support/getMachineProvider"
-import { childToMachine } from "../../../support/misc/jobToMachine"
+import { childToMachine } from "../../../support/misc/childToMachine"
 
 export const selfDestructJob = createController(async req => {
 	if (req.authentication instanceof ApiKey) {

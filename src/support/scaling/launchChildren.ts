@@ -7,7 +7,6 @@ import { randomNumber } from "../misc/randomNumber"
 import { randomString } from "../misc/randomString"
 import { updateNginxConfig } from "../nginx/updateNginxConfig"
 import { getInternalAddress } from "../network/getInternalAddress"
-import { getPublicAddress } from "../network/getPublicAddress"
 
 export interface LaunchChildrenOptions {
 	build: Build
@@ -34,13 +33,11 @@ export async function launchChildren(options: LaunchChildrenOptions) {
 		Provider,
 		Children,
 		env,
-		publicAddress,
 		internalAddress
 	] = await Promise.all([
 		getMachineProvider(),
 		getChildrenAdapter(true),
 		Environment.getAll(),
-		getPublicAddress(),
 		getInternalAddress()
 	])
 
@@ -61,12 +58,9 @@ export async function launchChildren(options: LaunchChildrenOptions) {
 				key: "IEPAAS",
 				value: "true"
 			},
-			// TODO if we send the internal ip here, the iepaas api will
-			// receive the internal ip of the machine instead of the public
-			// and will not be able to authenticate it.
 			{
 				key: "IEPAAS_API_HOST",
-				value: publicAddress
+				value: internalAddress
 			}
 		].map(it => `export ${it.key}='${it.value}'`)
 
@@ -81,12 +75,12 @@ export async function launchChildren(options: LaunchChildrenOptions) {
 				`cat > ${scriptFile} << EOF`,
 				...envCommands,
 				command,
+				// We sleep for a bit because the children will only be
+				// authenticated if they have been created successfully,
+				// and the creation finished after cloud-init finishes
 				isJob
-					? // We sleep for a bit because the children will only be
-						// authenticated if they have been created successfully,
-						// and the creation finished after cloud-init finishes
-						oneLine`sleep 5 &&
-						curl https://${publicAddress}:4898/api/v1/jobs
+					? oneLine`sleep 5 &&
+						curl https://${internalAddress}:4898/api/v1/jobs
 						-X DELETE
 						--header "X-Iepaas-Authenticate-As-Child: true
 						--retry 10
@@ -110,7 +104,7 @@ export async function launchChildren(options: LaunchChildrenOptions) {
 				createMachine().then(({ machine, port }) =>
 					Children.insert({
 						machineId: machine.id,
-						machineAddress: machine.address,
+						machineAddress: machine.privateAddress,
 						machinePort: port + "",
 						isJob,
 						build,

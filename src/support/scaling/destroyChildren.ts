@@ -2,7 +2,7 @@ import { Child } from "@iepaas/model"
 import { getChildrenAdapter } from "@iepaas/db-adapter"
 import { getMachineProvider } from "../getMachineProvider"
 import { updateNginxConfig } from "../nginx/updateNginxConfig"
-import { childToMachine } from "../misc/jobToMachine"
+import { childToMachine } from "../misc/childToMachine"
 
 export async function destroyChildren(children: Array<Child>) {
 	const [Children, Provider] = await Promise.all([
