@@ -36,7 +36,7 @@ export async function main() {
 
 		console.log("Launch succeeded; the first child is live.")
 	} catch (e) {
-		await Config.delete(repoUrl)
+		await Config.delete(REPO_URL)
 		throw e
 	}
 }

@@ -82,9 +82,10 @@ export async function launchChildren(options: LaunchChildrenOptions) {
 					? oneLine`sleep 5 &&
 						curl https://${internalAddress}:4898/api/v1/jobs
 						-X DELETE
-						--header "X-Iepaas-Authenticate-As-Child: true
+						--insecure
+						--header "X-Iepaas-Authenticate-As-Child: true"
 						--retry 10
-						--retry-delay 5"
+						--retry-delay 5
 						> /dev/null 2>&1`
 					: "",
 				`EOF`,
