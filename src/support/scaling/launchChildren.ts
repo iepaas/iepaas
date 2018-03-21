@@ -69,6 +69,7 @@ export async function launchChildren(options: LaunchChildrenOptions) {
 
 		const machine = await Provider.createMachine(
 			MachineType.CHILD,
+			// TODO move this to a template
 			[
 				`cd /app`,
 				`touch ${logFile}`,
@@ -90,7 +91,17 @@ export async function launchChildren(options: LaunchChildrenOptions) {
 					: "",
 				`EOF`,
 				`nohup tail -f ${logFile} | nc ${internalAddress} ${logPort} &`,
-				`nohup sh -c 'bash ${scriptFile} > ${logFile} 2>&1' &`
+				`nohup sh -c 'bash ${scriptFile} > ${logFile} 2>&1' &`,
+				`wait $!`,
+				// If the process exits, destory the machine to launch another
+				oneLine`curl https://${internalAddress}:4898/api/v1/jobs
+					-X DELETE
+					--insecure
+					--header "X-Iepaas-Authenticate-As-Child: true"
+					--retry 10
+					--retry-delay 5
+					> /dev/null 2>&1`
+				// TODO replace machine when process exits
 			],
 			{ id: build.snapshot }
 		)
@@ -98,6 +109,9 @@ export async function launchChildren(options: LaunchChildrenOptions) {
 		return { machine, port }
 	}
 
+	// TODO save the machine before cloud init begins
+	// This is because the child might try to authenticate before it being
+	// present in the list of children
 	await Promise.all(
 		Array(quantity)
 			.fill(null)
