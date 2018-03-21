@@ -92,15 +92,20 @@ export async function launchChildren(options: LaunchChildrenOptions) {
 				`EOF`,
 				`nohup tail -f ${logFile} | nc ${internalAddress} ${logPort} &`,
 				`nohup sh -c 'bash ${scriptFile} > ${logFile} 2>&1' &`,
-				`wait $!`,
 				// If the process exits, destory the machine to launch another
+				`cat > /tmp/waiter.sh << EOF`,
+				`while [ -e /proc/$! ]`,
+				`do`,
+				`echo "while blocks need a body" > /dev/null`,
+				`done`,
 				oneLine`curl https://${internalAddress}:4898/api/v1/jobs
 					-X DELETE
 					--insecure
 					--header "X-Iepaas-Authenticate-As-Child: true"
 					--retry 10
 					--retry-delay 5
-					> /dev/null 2>&1`
+					> /dev/null 2>&1`,
+				`EOF`
 				// TODO replace machine when process exits
 			],
 			{ id: build.snapshot }
