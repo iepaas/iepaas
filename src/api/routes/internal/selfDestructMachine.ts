@@ -23,7 +23,7 @@ export const selfDestructMachine = createController(async req => {
     getChildrenAdapter()
 		.then(A => A.update(child, { isTerminated: true }))
 		.then(() => {
-			if (req.authentication.isJob) {
+			if (child.isJob) {
 				return Promise.resolve()
 			} else {
 				// Replace the machine that exited
@@ -38,7 +38,7 @@ export const selfDestructMachine = createController(async req => {
             console.error(err)
         })
 
-	if (req.authentication.isJob) {
+	if (child.isJob) {
         console.log(`The job from machine ${child.machineId} finished`)
 	} else {
         console.log(`Machine ${child.machineId} quit unexpectedly!`)

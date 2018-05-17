@@ -1,7 +1,6 @@
 import * as Handlebars from "handlebars"
 import * as fs from "fs"
 import { promisify } from "util"
-import { oneLine } from "common-tags"
 import { Build, Process } from "@iepaas/model"
 import { Environment, getChildrenAdapter } from "@iepaas/db-adapter"
 import { MachineType } from "@iepaas/machine-provider-abstract"
