@@ -1,3 +1,6 @@
+import * as Handlebars from "handlebars"
+import * as fs from "fs"
+import { promisify } from "util"
 import { oneLine } from "common-tags"
 import { Build, Process } from "@iepaas/model"
 import { Environment, getChildrenAdapter } from "@iepaas/db-adapter"
@@ -7,6 +10,8 @@ import { randomNumber } from "../misc/randomNumber"
 import { randomString } from "../misc/randomString"
 import { updateNginxConfig } from "../nginx/updateNginxConfig"
 import { getInternalAddress } from "../network/getInternalAddress"
+
+const readFile = promisify(fs.readFile)
 
 export interface LaunchChildrenOptions {
 	build: Build
@@ -32,7 +37,7 @@ export async function launchChildren(options: LaunchChildrenOptions) {
 	const [
 		Provider,
 		Children,
-		env,
+        givenEnv,
 		internalAddress
 	] = await Promise.all([
 		getMachineProvider(),
@@ -43,13 +48,17 @@ export async function launchChildren(options: LaunchChildrenOptions) {
 
 	const logPort = isJob ? 5002 : 5001
 
+    const template = Handlebars.compile(
+        await readFile("/iepaas/res/launchChild.hbs", "utf8")
+    )
+
 	const createMachine = async () => {
 		// Randomize the ports so the authentication doesn't hardcode them
 		// TODO jobs shouldn't have ports given to them
 		// TODO make a health check port too
 		const port = randomNumber(3001, 4000)
-		const envCommands = [
-			...env,
+		const env = [
+			...givenEnv,
 			{
 				key: "PORT",
 				value: port
@@ -62,52 +71,23 @@ export async function launchChildren(options: LaunchChildrenOptions) {
 				key: "IEPAAS_API_HOST",
 				value: internalAddress
 			}
-		].map(it => `export ${it.key}='${it.value}'`)
+		]
 
 		const scriptFile = `/tmp/iepaas_${randomString(6)}.sh`
 		const logFile = `/tmp/iepaas_${randomString(6)}.log`
 
+		const commands = template({
+            logFile,
+			logPort,
+			scriptFile,
+			env,
+			command,
+			internalAddress
+        }).split("\n")
+
 		const machine = await Provider.createMachine(
 			MachineType.CHILD,
-			// TODO move this to a template
-			[
-				`cd /app`,
-				`touch ${logFile}`,
-				`cat > ${scriptFile} << EOF`,
-				...envCommands,
-				command,
-				// We sleep for a bit because the children will only be
-				// authenticated if they have been created successfully,
-				// and the creation finished after cloud-init finishes
-				isJob
-					? oneLine`sleep 5 &&
-						curl https://${internalAddress}:4898/api/v1/jobs
-						-X DELETE
-						--insecure
-						--header "X-Iepaas-Authenticate-As-Child: true"
-						--retry 10
-						--retry-delay 5
-						> /dev/null 2>&1`
-					: "",
-				`EOF`,
-				`nohup tail -f ${logFile} | nc ${internalAddress} ${logPort} &`,
-				`nohup sh -c 'bash ${scriptFile} > ${logFile} 2>&1' &`,
-				// If the process exits, destory the machine to launch another
-				`cat > /tmp/waiter.sh << EOF`,
-				`while [ -e /proc/$! ]`,
-				`do`,
-				`echo "while blocks need a body" > /dev/null`,
-				`done`,
-				oneLine`curl https://${internalAddress}:4898/api/v1/jobs
-					-X DELETE
-					--insecure
-					--header "X-Iepaas-Authenticate-As-Child: true"
-					--retry 10
-					--retry-delay 5
-					> /dev/null 2>&1`,
-				`EOF`
-				// TODO replace machine when process exits
-			],
+			commands,
 			{ id: build.snapshot }
 		)
 

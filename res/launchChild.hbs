@@ -1,0 +1,24 @@
+cd /app
+touch {{logFile}}
+cat > {{scriptFile}} << EOF
+    {{#each env}}
+        export {{key}}={{value}}
+    {{/each}}
+    {{command}}
+
+    {{!
+    We sleep for a bit because the children will only be
+	authenticated if they have been created successfully,
+	and the creation finished after cloud-init finishes
+    }}
+    sleep 5 && \
+    curl -X POST \
+        https://${internalAddress}:4898/api/v1/internal/selfDestructMachine \
+        --insecure \
+        --header "X-Iepaas-Authenticate-As-Child: true" \
+        --retry 10 \
+        --retry-delay 5 > /dev/null 2>&1
+EOF
+
+nohup tail -f {{logFile}} | nc {{internalAddress}} {{logPort}} &
+nohup sh -c 'bash {{scriptFile}} > {{logFile}} 2>&1' &

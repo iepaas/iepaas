@@ -5,6 +5,7 @@ import { apiKeys } from "./apiKeys"
 import { sshKeys } from "./sshKeys"
 import { jobs } from "./jobs"
 import { domains } from "./domains"
+import { internal } from "./internal"
 
 const router = Router()
 
@@ -16,5 +17,6 @@ router.use("/apiKeys", apiKeys)
 router.use("/sshKeys", sshKeys)
 router.use("/jobs", jobs)
 router.use("/domains", domains)
+router.use("/internal", internal)
 
 export { router as api }

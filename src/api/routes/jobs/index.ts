@@ -2,14 +2,14 @@ import { Router } from "express"
 import { methodNotAllowed } from "../../../support/methodNotAllowed"
 import { createJob } from "./createJob"
 import { createJobValidations } from "./validations/createJobValidations"
-import { selfDestructJob } from "./selfDestructJob"
+import { selfDestructMachine } from "../internal/selfDestructMachine"
 
 const router = Router()
 
 router
 	.route("/")
 	.post(createJobValidations, createJob)
-	.delete(selfDestructJob)
+	.delete(selfDestructMachine)
 	.all(methodNotAllowed)
 
 export { router as jobs }
